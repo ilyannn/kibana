@@ -9,6 +9,7 @@ import AdmZip from 'adm-zip';
 import nunjucks from 'nunjucks';
 import { getDataPath } from '@kbn/utils';
 import { join as joinPath } from 'path';
+import { safeDump } from 'js-yaml';
 import type { DataStream, Integration } from '../../common';
 import { createSync, ensureDirSync, generateUniqueId, removeDirSync } from '../util';
 import { createAgentInput } from './agent';
@@ -91,7 +92,7 @@ function createBuildFile(packageDir: string): void {
 
 function createChangelog(packageDir: string): void {
   const changelogTemplate = nunjucks.render('changelog.yml.njk', {
-    initial_version: initialVersion,
+    initial_version: safeDump(initialVersion),
   });
 
   createSync(joinPath(packageDir, 'changelog.yml'), changelogTemplate);
@@ -101,7 +102,7 @@ function createReadme(packageDir: string, integration: Integration) {
   const readmeDirPath = joinPath(packageDir, '_dev/build/docs/');
   ensureDirSync(readmeDirPath);
   const readmeTemplate = nunjucks.render('package_readme.md.njk', {
-    package_name: integration.name,
+    package_name: safeDump(integration.name),
     data_streams: integration.dataStreams,
   });
 
@@ -123,9 +124,9 @@ function createPackageManifest(packageDir: string, integration: Integration): vo
     dataStream.inputTypes.forEach((inputType: string) => {
       if (!uniqueInputs[inputType]) {
         uniqueInputs[inputType] = {
-          type: inputType,
-          title: dataStream.title,
-          description: dataStream.description,
+          type: safeDump(inputType),
+          title: safeDump(`${dataStream.title} : ${inputType}`),
+          description: safeDump(dataStream.description),
         };
       }
     });
@@ -135,13 +136,14 @@ function createPackageManifest(packageDir: string, integration: Integration): vo
 
   const packageManifest = nunjucks.render('package_manifest.yml.njk', {
     format_version: '3.1.4',
-    package_title: integration.title,
-    package_name: integration.name,
-    package_version: initialVersion,
-    package_description: integration.description,
-    package_logo: integration.logo,
+    package_title: safeDump(integration.title),
+    package_name: safeDump(integration.name),
+    package_version: safeDump(initialVersion),
+    package_description: safeDump(integration.description),
+    package_logo: safeDump(integration.logo),
+    package_logo_title: safeDump(`${integration.name} Logo`),
     package_owner: '@elastic/custom-integrations',
-    min_version: '^8.13.0',
+    min_version: safeDump('^8.13.0'),
     inputs: uniqueInputsList,
   });
 
