@@ -19,6 +19,10 @@ import { createPipeline } from './pipeline';
 
 const initialVersion = '1.0.0';
 
+function safeDumpString(value: string): string {
+  return safeDump(value, { skipInvalid: true });
+}
+
 export async function buildPackage(integration: Integration): Promise<Buffer> {
   const templateDir = joinPath(__dirname, '../templates');
   const agentTemplates = joinPath(templateDir, 'agent');
@@ -92,7 +96,7 @@ function createBuildFile(packageDir: string): void {
 
 function createChangelog(packageDir: string): void {
   const changelogTemplate = nunjucks.render('changelog.yml.njk', {
-    initial_version: safeDump(initialVersion),
+    initial_version: safeDumpString(initialVersion),
   });
 
   createSync(joinPath(packageDir, 'changelog.yml'), changelogTemplate);
@@ -102,7 +106,7 @@ function createReadme(packageDir: string, integration: Integration) {
   const readmeDirPath = joinPath(packageDir, '_dev/build/docs/');
   ensureDirSync(readmeDirPath);
   const readmeTemplate = nunjucks.render('package_readme.md.njk', {
-    package_name: safeDump(integration.name),
+    package_name: safeDumpString(integration.name),
     data_streams: integration.dataStreams,
   });
 
@@ -124,9 +128,9 @@ function createPackageManifest(packageDir: string, integration: Integration): vo
     dataStream.inputTypes.forEach((inputType: string) => {
       if (!uniqueInputs[inputType]) {
         uniqueInputs[inputType] = {
-          type: safeDump(inputType),
-          title: safeDump(`${dataStream.title} : ${inputType}`),
-          description: safeDump(dataStream.description),
+          type: safeDumpString(inputType),
+          title: safeDumpString(`${dataStream.title} : ${inputType}`),
+          description: safeDumpString(dataStream.description),
         };
       }
     });
@@ -136,14 +140,14 @@ function createPackageManifest(packageDir: string, integration: Integration): vo
 
   const packageManifest = nunjucks.render('package_manifest.yml.njk', {
     format_version: '3.1.4',
-    package_title: safeDump(integration.title),
-    package_name: safeDump(integration.name),
-    package_version: safeDump(initialVersion),
-    package_description: safeDump(integration.description),
-    package_logo: safeDump(integration.logo),
-    package_logo_title: safeDump(`${integration.name} Logo`),
+    package_title: safeDumpString(integration.title),
+    package_name: safeDumpString(integration.name),
+    package_version: safeDumpString(initialVersion),
+    package_description: safeDumpString(integration.description),
+    package_logo: safeDumpString(integration.logo ?? ''),
+    package_logo_title: safeDumpString(`${integration.name} Logo`),
     package_owner: '@elastic/custom-integrations',
-    min_version: safeDump('^8.13.0'),
+    min_version: safeDumpString('^8.13.0'),
     inputs: uniqueInputsList,
   });
 
