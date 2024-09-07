@@ -18,12 +18,60 @@ import { createFieldMapping } from './fields';
 import { createPipeline } from './pipeline';
 
 const initialVersion = '1.0.0';
+const MaxManifestNestedIndent = 10;
 
-function safeDumpString(value: string): string {
-  return safeDump(value, { skipInvalid: true });
+function generatePreamble(data: string | object): string | object {
+  return { a: { b: data } };
 }
 
-export async function buildPackage(integration: Integration): Promise<Buffer> {
+const DumpStringOptions = { indent: MaxManifestNestedIndent + 2, quotingType: '"' };
+const DumpStringPreamble = generatePreamble('c');
+const DumpStringRenderedPreamble = safeDump(DumpStringPreamble, DumpStringOptions).replace(
+  /c\n$/,
+  ''
+);
+
+/**
+ * Renders a string to YAML format.
+ *
+ * This function takes a string input and returns a YAML representation of the input, including
+ * strings containing special characters or multiline strings. The result is unambigously a YAML
+ * string, using quotes as necessary for special characters and cases, e.g.:
+ *
+ *   renderYAMLString('string') => string
+ *   renderYAMLString('1') => "1"
+ *   renderYAMLString('a\tb') => "a\tb"
+ *
+ * The YAML representation can be used in the folowing context, **provided** that the indent
+ * of the field `key` does not exceed the `MaxManifestNestedIndent` value:
+ *
+ * ```
+ * start:
+ * // ... some keys omitted ...
+ *       key: {{ renderYAMLString(input) }}
+ * ^^^^^^ // this must be less than `MaxManifestNestedIndent` spaces
+ * ```
+ *
+ * @param input - The string to be dumped to YAML format.
+ * @returns The YAML representation of the input string.
+ */
+export function renderYAMLString(input: string): string {
+  const dumped = safeDump(generatePreamble(input), DumpStringOptions).replace(/\n$/, '');
+
+  if (dumped.startsWith(DumpStringRenderedPreamble)) {
+    return dumped.slice(DumpStringRenderedPreamble.length);
+  } else {
+    return '';
+  }
+}
+
+/**
+ * Configures the Nunjucks templating engine.
+ *
+ * This function sets up the template directories and configuration options for Nunjucks.
+ * It configures the template directories for agent, manifest, and system tests.
+ */
+export function configureNunjucks() {
   const templateDir = joinPath(__dirname, '../templates');
   const agentTemplates = joinPath(templateDir, 'agent');
   const manifestTemplates = joinPath(templateDir, 'manifest');
@@ -31,6 +79,10 @@ export async function buildPackage(integration: Integration): Promise<Buffer> {
   nunjucks.configure([templateDir, agentTemplates, manifestTemplates, systemTestTemplates], {
     autoescape: false,
   });
+}
+
+export async function buildPackage(integration: Integration): Promise<Buffer> {
+  configureNunjucks();
 
   const workingDir = joinPath(getDataPath(), `integration-assistant-${generateUniqueId()}`);
   const packageDirectoryName = `${integration.name}-${initialVersion}`;
@@ -96,7 +148,7 @@ function createBuildFile(packageDir: string): void {
 
 function createChangelog(packageDir: string): void {
   const changelogTemplate = nunjucks.render('changelog.yml.njk', {
-    initial_version: safeDumpString(initialVersion),
+    initial_version: renderYAMLString(initialVersion),
   });
 
   createSync(joinPath(packageDir, 'changelog.yml'), changelogTemplate);
@@ -106,7 +158,7 @@ function createReadme(packageDir: string, integration: Integration) {
   const readmeDirPath = joinPath(packageDir, '_dev/build/docs/');
   ensureDirSync(readmeDirPath);
   const readmeTemplate = nunjucks.render('package_readme.md.njk', {
-    package_name: safeDumpString(integration.name),
+    package_name: renderYAMLString(integration.name),
     data_streams: integration.dataStreams,
   });
 
@@ -121,16 +173,16 @@ async function createZipArchive(workingDir: string, packageDirectoryName: string
   return buffer;
 }
 
-function createPackageManifest(packageDir: string, integration: Integration): void {
+export function preparePackageManifest(integration: Integration): string {
   const uniqueInputs: { [key: string]: { type: string; title: string; description: string } } = {};
 
   integration.dataStreams.forEach((dataStream: DataStream) => {
     dataStream.inputTypes.forEach((inputType: string) => {
       if (!uniqueInputs[inputType]) {
         uniqueInputs[inputType] = {
-          type: safeDumpString(inputType),
-          title: safeDumpString(`${dataStream.title} : ${inputType}`),
-          description: safeDumpString(dataStream.description),
+          type: renderYAMLString(inputType),
+          title: renderYAMLString(`${dataStream.title} : ${inputType}`),
+          description: renderYAMLString(dataStream.description),
         };
       }
     });
@@ -138,18 +190,20 @@ function createPackageManifest(packageDir: string, integration: Integration): vo
 
   const uniqueInputsList = Object.values(uniqueInputs);
 
-  const packageManifest = nunjucks.render('package_manifest.yml.njk', {
+  return nunjucks.render('package_manifest.yml.njk', {
     format_version: '3.1.4',
-    package_title: safeDumpString(integration.title),
-    package_name: safeDumpString(integration.name),
-    package_version: safeDumpString(initialVersion),
-    package_description: safeDumpString(integration.description),
-    package_logo: safeDumpString(integration.logo ?? ''),
-    package_logo_title: safeDumpString(`${integration.name} Logo`),
+    package_title: renderYAMLString(integration.title),
+    package_name: renderYAMLString(integration.name),
+    package_version: renderYAMLString(initialVersion),
+    package_description: renderYAMLString(integration.description),
+    package_logo: renderYAMLString(integration.logo ?? ''),
+    package_logo_title: renderYAMLString(`${integration.name} Logo`),
     package_owner: '@elastic/custom-integrations',
-    min_version: safeDumpString('^8.13.0'),
+    min_version: renderYAMLString('^8.13.0'),
     inputs: uniqueInputsList,
   });
+}
 
-  createSync(joinPath(packageDir, 'manifest.yml'), packageManifest);
+export function createPackageManifest(packageDir: string, integration: Integration): void {
+  createSync(joinPath(packageDir, 'manifest.yml'), preparePackageManifest(integration));
 }
