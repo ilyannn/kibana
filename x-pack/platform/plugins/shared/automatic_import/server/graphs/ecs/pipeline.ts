@@ -14,6 +14,7 @@ import { ECS_TYPES } from './constants';
 import { deepCopy } from '../../util/util';
 import { type FieldPath, fieldPathToProcessorString } from '../../util/fields';
 import { fieldPathToPainlessExpression, SafePainlessExpression } from '../../util/painless';
+import { makeTagsUnique, normalizeTags } from '../../util/processors';
 
 interface ECSField {
   target: string;
@@ -39,6 +40,7 @@ interface SafeESProcessorItem extends ESProcessorItem {
     target_field?: string;
     type?: KnownESType;
     formats?: string[];
+    tag: string;
   };
 }
 
@@ -48,13 +50,17 @@ function generateProcessor(
   expectedEcsType: string,
   sampleValue: unknown
 ): SafeESProcessorItem {
+  const processorString = fieldPathToProcessorString(currentPath);
+  const tagString = currentPath.join('.');
+
   if (needsTypeConversion(sampleValue, expectedEcsType)) {
     return {
       convert: {
-        field: fieldPathToProcessorString(currentPath),
+        field: processorString,
         target_field: ecsField.target,
         type: getConvertProcessorType(expectedEcsType),
         ignore_missing: true,
+        tag: `convert-${tagString}-to-${expectedEcsType}-${ecsField.target}`,
       },
     };
   }
@@ -62,19 +68,21 @@ function generateProcessor(
   if (ecsField.type === 'date') {
     return {
       date: {
-        field: fieldPathToProcessorString(currentPath),
+        field: processorString,
         target_field: ecsField.target,
         formats: convertIfIsoDate(ecsField.date_formats),
         if: fieldPathToPainlessExpression(currentPath),
+        tag: `parse-date-${tagString}-to-${ecsField.target}`,
       },
     };
   }
 
   return {
     rename: {
-      field: fieldPathToProcessorString(currentPath),
+      field: processorString,
       target_field: ecsField.target,
       ignore_missing: true,
+      tag: `rename-${tagString}-to-${ecsField.target}`,
     },
   };
 }
@@ -176,6 +184,7 @@ export function generateProcessors(
           getEcsType(value as ECSField, ecsTypes),
           getSampleValue(currentPath, samples)
         );
+        normalizeTags([processor]);
         results.push(processor);
       } else {
         results.push(...generateProcessors(value, samples, currentPath));
@@ -186,7 +195,7 @@ export function generateProcessors(
   return results;
 }
 
-export function createPipeline(state: EcsMappingState): Pipeline {
+export function createPipelineFromMappingState(state: EcsMappingState): Pipeline {
   const samples = JSON.parse(state.combinedSamples);
 
   const processors = generateProcessors(state.finalMapping, samples);
@@ -219,13 +228,13 @@ export function createPipeline(state: EcsMappingState): Pipeline {
   if (state.additionalProcessors.length > 0) {
     ingestPipeline = combineProcessors(ingestPipeline, state.additionalProcessors);
   }
+  const allProcessors = [...ingestPipeline.processors, ...(ingestPipeline.on_failure ?? [])];
+  normalizeTags(allProcessors);
+  makeTagsUnique(allProcessors);
   return ingestPipeline;
 }
 
-export function combineProcessors(
-  initialPipeline: Pipeline,
-  processors: ESProcessorItem[]
-): Pipeline {
+function combineProcessors(initialPipeline: Pipeline, processors: ESProcessorItem[]): Pipeline {
   // Create a deep copy of the initialPipeline to avoid modifying the original input
   const currentPipeline = deepCopy(initialPipeline);
   const currentProcessors = currentPipeline.processors;

@@ -9,9 +9,81 @@ import { load } from 'js-yaml';
 import { join as joinPath } from 'path';
 import { Environment, FileSystemLoader } from 'nunjucks';
 import { deepCopy } from './util';
-import type { ESProcessorItem, Pipeline } from '../../common';
+import type { ESProcessorItem, ESProcessorOptions, Pipeline } from '../../common';
 import type { KVState, SimplifiedProcessors } from '../types';
 import { KVProcessor } from '../processor_types';
+
+/**
+ * Normalizes an input tag for readability.
+ *
+ * Currently only ths spaces are hanged into dashes. This is fine since tags
+ * don't restrict the characters that can be used.
+ *
+ * @param tag - The input tag to normalize.
+ * @returns A normalized version of the input tag.
+ */
+function normalizeTag(tag: string): string {
+  return tag.trim().replace(/ /g, '_');
+}
+
+/**
+ * Retrieves the processor options from the provided Elasticsearch processor item.
+ *
+ * By definiton, a correctly defined Elasticsearch processor must be an object with a
+ * single key-value pair, so this function extracts the value (options) associated with the key.
+ *
+ * @param processor - Correctly defined Elasticsearch processor item.
+ * @returns The options associated with the processor item.
+ */
+function processorOptions(processor: ESProcessorItem): ESProcessorOptions {
+  const key = Object.keys(processor)[0];
+  const options = processor[key];
+  return options;
+}
+
+/**
+ * Normalizes the tags of the processors in the provided collection.
+ *
+ * Updates the tag property of each processor in the provided collection by converting
+ * it to a normalized format. This is useful for ensuring a consistent and standardized
+ * tag naming convention.
+ *
+ * @param processors - A list of processors that may contain a tag property
+ *                     which needs normalization
+ */
+export function normalizeTags(processors: ESProcessorItem[]) {
+  for (const processor of processors) {
+    const options = processorOptions(processor);
+    if (options.tag) {
+      options.tag = normalizeTag(options.tag);
+    }
+  }
+}
+
+/**
+ * Ensures that each processor's tag is unique within the given array.
+ * If a duplicate tag is found, we append a numeric postfix to make it unique.
+ *
+ * @param processors - An array of processors to update with unique tags.
+ */
+export function makeTagsUnique(processors: ESProcessorItem[]) {
+  const knownTags = new Set<string>();
+  for (const processor of processors) {
+    const options = processorOptions(processor);
+    if (options.tag) {
+      let tag = options.tag;
+
+      if (knownTags.has(options.tag)) {
+        for (let postfix = 2; knownTags.has(tag); postfix++) {
+          tag = `${options.tag}-${postfix}`;
+        }
+        options.tag = tag;
+      }
+
+      knownTags.add(tag);
+    }
+  }
+}
 
 export function combineProcessors(
   initialPipeline: Pipeline,
@@ -31,6 +103,7 @@ export function combineProcessors(
     ...appendProcessors,
     ...currentProcessors.slice(-2),
   ];
+  makeTagsUnique(combinedProcessors);
   currentPipeline.processors = combinedProcessors;
   return currentPipeline;
 }
@@ -45,6 +118,7 @@ function createAppendProcessors(processors: SimplifiedProcessors): ESProcessorIt
   const template = env.getTemplate('append.yml.njk');
   const renderedTemplate = template.render({ processors });
   const appendProcessors = load(renderedTemplate) as ESProcessorItem[];
+  normalizeTags(appendProcessors);
   return appendProcessors;
 }
 
@@ -58,6 +132,7 @@ export function createGrokProcessor(grokPatterns: string[]): ESProcessorItem {
   const template = env.getTemplate('grok.yml.njk');
   const renderedTemplate = template.render({ grokPatterns });
   const grokProcessor = load(renderedTemplate) as ESProcessorItem;
+  normalizeTags([grokProcessor]);
   return grokProcessor;
 }
 
@@ -82,6 +157,7 @@ export function createKVProcessor(kvInput: KVProcessor, state: KVState): ESProce
     dataStreamName: state.dataStreamName,
   });
   const kvProcessor = load(renderedTemplate) as ESProcessorItem;
+  normalizeTags([kvProcessor]);
   return kvProcessor;
 }
 
@@ -92,7 +168,7 @@ export function createCSVProcessor(source: string, targets: string[]): ESProcess
       field: source,
       target_fields: targets,
       description: 'Parse CSV input',
-      tag: 'parse_csv',
+      tag: 'parse-csv',
     },
   };
 }
@@ -104,7 +180,7 @@ export function createPassthroughFailureProcessor(): ESProcessorItem {
     append: {
       field: 'error.message',
       description: 'Append the error message as-is',
-      tag: 'append_error_message',
+      tag: 'append-error-message',
       value: '{{{_ingest.on_failure_message}}}',
     },
   };
@@ -117,7 +193,7 @@ export function createRemoveProcessor(): ESProcessorItem {
       field: 'message',
       ignore_missing: true,
       description: 'Remove the message field',
-      tag: 'remove_message_field',
+      tag: 'remove-message-field',
     },
   };
 }

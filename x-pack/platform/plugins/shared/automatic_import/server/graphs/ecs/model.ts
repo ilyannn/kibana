@@ -8,7 +8,7 @@ import type { EcsMappingState } from '../../types';
 import { prefixSamples } from '../../util/samples';
 import { mergeAndChunkSamples } from './chunk';
 import { ECS_EXAMPLE_ANSWER, ECS_FIELDS } from './constants';
-import { createPipeline } from './pipeline';
+import { createPipelineFromMappingState } from './pipeline';
 import type { EcsBaseNodeParams } from './types';
 import { removeReservedFields } from './validate';
 
@@ -43,7 +43,7 @@ export function modelInput({ state }: EcsBaseNodeParams): Partial<EcsMappingStat
 }
 
 export function modelOutput({ state }: EcsBaseNodeParams): Partial<EcsMappingState> {
-  const currentPipeline = createPipeline(state);
+  const currentPipeline = createPipelineFromMappingState(state);
   return {
     finalized: true,
     lastExecutedChain: 'modelOutput',

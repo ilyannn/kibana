@@ -33,7 +33,7 @@ export type {
   LangSmithOptions,
 } from './api/model/common_attributes.gen';
 export { SamplesFormat, SamplesFormatName } from './api/model/common_attributes.gen';
-export type { ESProcessorItem } from './api/model/processor_attributes.gen';
+export type { ESProcessorItem, ESProcessorOptions } from './api/model/processor_attributes.gen';
 export type { CelInput, CelAuthType } from './api/model/cel_input_attributes.gen';
 
 export {

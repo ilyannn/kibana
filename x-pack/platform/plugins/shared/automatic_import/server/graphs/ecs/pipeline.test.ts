@@ -7,13 +7,13 @@
 
 import { ecsPipelineState } from '../../../__jest__/fixtures/ecs_mapping';
 import type { EcsMappingState } from '../../types';
-import { createPipeline, generateProcessors } from './pipeline';
+import { createPipelineFromMappingState, generateProcessors } from './pipeline';
 
 const state: EcsMappingState = ecsPipelineState;
 
 describe('Testing pipeline templates', () => {
   it('handle pipeline creation', async () => {
-    const pipeline = createPipeline(state);
+    const pipeline = createPipelineFromMappingState(state);
     expect(pipeline.processors).toEqual([
       {
         set: { field: 'ecs.version', tag: 'set_ecs_version', value: '8.11.0' },
