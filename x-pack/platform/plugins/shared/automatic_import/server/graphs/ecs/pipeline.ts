@@ -14,7 +14,7 @@ import { ECS_TYPES } from './constants';
 import { deepCopy } from '../../util/util';
 import { type FieldPath, fieldPathToProcessorString } from '../../util/fields';
 import { fieldPathToPainlessExpression, SafePainlessExpression } from '../../util/painless';
-import { makeTagsUnique, normalizeTags } from '../../util/processors';
+import { makeTagsUnique } from '../../util/processors';
 
 interface ECSField {
   target: string;
@@ -60,7 +60,7 @@ function generateProcessor(
         target_field: ecsField.target,
         type: getConvertProcessorType(expectedEcsType),
         ignore_missing: true,
-        tag: `convert_${tagString}_to_${expectedEcsType}_${ecsField.target}`,
+        tag: `Convert ${tagString} to ${expectedEcsType} ${ecsField.target}`,
       },
     };
   }
@@ -72,7 +72,7 @@ function generateProcessor(
         target_field: ecsField.target,
         formats: convertIfIsoDate(ecsField.date_formats),
         if: fieldPathToPainlessExpression(currentPath),
-        tag: `parse_date_${tagString}_to_${ecsField.target}`,
+        tag: `Parse date ${tagString} to ${ecsField.target}`,
       },
     };
   }
@@ -82,7 +82,7 @@ function generateProcessor(
       field: processorString,
       target_field: ecsField.target,
       ignore_missing: true,
-      tag: `rename_${tagString}_to_${ecsField.target}`,
+      tag: `rename ${tagString} to ${ecsField.target}`,
     },
   };
 }
@@ -184,7 +184,6 @@ export function generateProcessors(
           getEcsType(value as ECSField, ecsTypes),
           getSampleValue(currentPath, samples)
         );
-        normalizeTags([processor]);
         results.push(processor);
       } else {
         results.push(...generateProcessors(value, samples, currentPath));
@@ -229,7 +228,6 @@ export function createPipelineFromMappingState(state: EcsMappingState): Pipeline
     ingestPipeline = combineProcessors(ingestPipeline, state.additionalProcessors);
   }
   const allProcessors = [...ingestPipeline.processors, ...(ingestPipeline.on_failure ?? [])];
-  normalizeTags(allProcessors);
   makeTagsUnique(allProcessors);
   return ingestPipeline;
 }

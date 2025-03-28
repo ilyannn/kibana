@@ -14,19 +14,6 @@ import type { KVState, SimplifiedProcessors } from '../types';
 import { KVProcessor } from '../processor_types';
 
 /**
- * Normalizes an input tag for readability.
- *
- * Currently only ths spaces are hanged into dashes. This is fine since tags
- * don't restrict the characters that can be used.
- *
- * @param tag - The input tag to normalize.
- * @returns A normalized version of the input tag.
- */
-function normalizeTag(tag: string): string {
-  return tag.trim().replace(/ /g, '_');
-}
-
-/**
  * Retrieves the processor options from the provided Elasticsearch processor item.
  *
  * By definiton, a correctly defined Elasticsearch processor must be an object with a
@@ -39,25 +26,6 @@ function processorOptions(processor: ESProcessorItem): ESProcessorOptions {
   const key = Object.keys(processor)[0];
   const options = processor[key];
   return options;
-}
-
-/**
- * Normalizes the tags of the processors in the provided collection.
- *
- * Updates the tag property of each processor in the provided collection by converting
- * it to a normalized format. This is useful for ensuring a consistent and standardized
- * tag naming convention.
- *
- * @param processors - A list of processors that may contain a tag property
- *                     which needs normalization
- */
-export function normalizeTags(processors: ESProcessorItem[]) {
-  for (const processor of processors) {
-    const options = processorOptions(processor);
-    if (options.tag) {
-      options.tag = normalizeTag(options.tag);
-    }
-  }
 }
 
 /**
@@ -118,7 +86,6 @@ function createAppendProcessors(processors: SimplifiedProcessors): ESProcessorIt
   const template = env.getTemplate('append.yml.njk');
   const renderedTemplate = template.render({ processors });
   const appendProcessors = load(renderedTemplate) as ESProcessorItem[];
-  normalizeTags(appendProcessors);
   return appendProcessors;
 }
 
@@ -132,7 +99,6 @@ export function createGrokProcessor(grokPatterns: string[]): ESProcessorItem {
   const template = env.getTemplate('grok.yml.njk');
   const renderedTemplate = template.render({ grokPatterns });
   const grokProcessor = load(renderedTemplate) as ESProcessorItem;
-  normalizeTags([grokProcessor]);
   return grokProcessor;
 }
 
@@ -157,7 +123,6 @@ export function createKVProcessor(kvInput: KVProcessor, state: KVState): ESProce
     dataStreamName: state.dataStreamName,
   });
   const kvProcessor = load(renderedTemplate) as ESProcessorItem;
-  normalizeTags([kvProcessor]);
   return kvProcessor;
 }
 
@@ -168,7 +133,7 @@ export function createCSVProcessor(source: string, targets: string[]): ESProcess
       field: source,
       target_fields: targets,
       description: 'Parse CSV input',
-      tag: 'parse_csv',
+      tag: 'parse csv',
     },
   };
 }
@@ -180,7 +145,7 @@ export function createPassthroughFailureProcessor(): ESProcessorItem {
     append: {
       field: 'error.message',
       description: 'Append the error message as-is',
-      tag: 'append_error_message',
+      tag: 'append error message',
       value: '{{{_ingest.on_failure_message}}}',
     },
   };
@@ -193,7 +158,7 @@ export function createRemoveProcessor(): ESProcessorItem {
       field: 'message',
       ignore_missing: true,
       description: 'Remove the message field',
-      tag: 'remove_message_field',
+      tag: 'remove message field',
     },
   };
 }
