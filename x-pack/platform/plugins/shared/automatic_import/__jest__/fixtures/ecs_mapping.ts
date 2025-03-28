@@ -257,6 +257,7 @@ export const ecsMappingExpectedResults = {
       {
         append: {
           field: 'error.message',
+          tag: 'error_append_message',
           value:
             'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}',
         },
@@ -264,6 +265,7 @@ export const ecsMappingExpectedResults = {
       {
         set: {
           field: 'event.kind',
+          tag: 'error_set_kind',
           value: 'pipeline_error',
         },
       },

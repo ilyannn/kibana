@@ -56,6 +56,7 @@ describe('Testing pipeline templates', () => {
         rename: {
           field: 'xdfsfs.ds.event',
           target_field: 'event.action',
+          tag: 'rename_xdfsfs.ds.event_to_event.action',
           ignore_missing: true,
         },
       },
@@ -64,12 +65,14 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.uid',
           target_field: 'event.id',
           ignore_missing: true,
+          tag: 'rename_xdfsfs.ds.uid_to_event.id',
         },
       },
       {
         rename: {
           field: 'xdfsfs.ds.code',
           target_field: 'event.code',
+          tag: 'rename_xdfsfs.ds.code_to_event.code',
           ignore_missing: true,
         },
       },
@@ -86,6 +89,7 @@ describe('Testing pipeline templates', () => {
         rename: {
           field: 'xdfsfs.ds.cluster_name',
           target_field: 'cloud.account.name',
+          tag: 'rename_xdfsfs.ds.cluster_name_to_cloud.account.name',
           ignore_missing: true,
         },
       },
@@ -93,6 +97,7 @@ describe('Testing pipeline templates', () => {
         rename: {
           field: 'xdfsfs.ds.identity.user',
           target_field: 'user.name',
+          tag: 'rename_xdfsfs.ds.identity.user_to_user.name',
           ignore_missing: true,
         },
       },
@@ -100,13 +105,14 @@ describe('Testing pipeline templates', () => {
         rename: {
           field: 'xdfsfs.ds.identity.roles',
           target_field: 'user.roles',
+          tag: 'rename_xdfsfs.ds.identity.roles_to_user.roles',
           ignore_missing: true,
         },
       },
       {
         script: {
           description: 'Ensures the date processor does not receive an array value.',
-          tag: 'script_convert_array_to_string',
+          tag: 'script_convert_array_to_string_xdfsfs.ds.identity.expires',
           lang: 'painless',
           source:
             'if (ctx.xdfsfs?.ds?.identity?.expires != null &&\n' +
@@ -131,12 +137,13 @@ describe('Testing pipeline templates', () => {
           ignore_missing: true,
           ignore_failure: true,
           type: 'ip',
+          tag: 'convert_xdfsfs.ds.identity.client_ip_to_ip',
         },
       },
       {
         script: {
           description: 'Ensures the date processor does not receive an array value.',
-          tag: 'script_convert_array_to_string',
+          tag: 'script_convert_array_to_string_xdfsfs.ds.identity.prev_identity_expires',
           lang: 'painless',
           source:
             'if (ctx.xdfsfs?.ds?.identity?.prev_identity_expires != null &&\n' +
@@ -159,6 +166,7 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.user',
           target_field: 'user.name',
           ignore_missing: true,
+          tag: 'rename_xdfsfs.ds.user_to_user.name',
         },
       },
       {
@@ -166,6 +174,7 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.login',
           target_field: 'user.id',
           ignore_missing: true,
+          tag: 'rename_xdfsfs.ds.login_to_user.id',
         },
       },
       {
@@ -173,6 +182,7 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.server_id',
           target_field: 'host.id',
           ignore_missing: true,
+          tag: 'rename_xdfsfs.ds.server_id_to_host.id',
         },
       },
       {
@@ -180,6 +190,7 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.server_hostname',
           target_field: 'host.hostname',
           ignore_missing: true,
+          tag: 'rename_xdfsfs.ds.server_hostname_to_host.hostname',
         },
       },
       {
@@ -187,6 +198,7 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.addr.remote',
           target_field: 'source.address',
           ignore_missing: true,
+          tag: 'rename_xdfsfs.ds.addr.remote_to_source.address',
         },
       },
       {
@@ -194,6 +206,7 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.proto',
           target_field: 'network.protocol',
           ignore_missing: true,
+          tag: 'rename_xdfsfs.ds.proto_to_network.protocol',
         },
       },
       {
@@ -333,6 +346,7 @@ describe('Testing pipeline templates', () => {
       rename: {
         field: 'nested.field',
         target_field: 'target.field',
+        tag: 'rename_nested.field_to_target.field',
         ignore_missing: true,
       },
     });
@@ -366,6 +380,7 @@ describe('Testing pipeline templates', () => {
         field: 'level1.no_target.field',
         target_field: 'target.field',
         ignore_missing: true,
+        tag: 'rename_level1.no_target.field_to_target.field',
       },
     });
   });
@@ -406,6 +421,7 @@ describe('Testing pipeline templates', () => {
       rename: {
         field: 'level1.level2.level3.field1',
         target_field: 'target.field1',
+        tag: 'rename_level1.level2.level3.field1_to_target.field1',
         ignore_missing: true,
       },
     });
@@ -413,6 +429,7 @@ describe('Testing pipeline templates', () => {
       rename: {
         field: 'level1.level2.field2',
         target_field: 'target.field2',
+        tag: 'rename_level1.level2.field2_to_target.field2',
         ignore_missing: true,
       },
     });
