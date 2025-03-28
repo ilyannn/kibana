@@ -28,7 +28,7 @@ export const categorizationInitialPipeline: Pipeline = {
     {
       remove: {
         field: 'event.original',
-        tag: 'remove_original_event',
+        tag: 'remove original event',
         if: 'ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))',
         ignore_failure: true,
         ignore_missing: true,
@@ -57,7 +57,7 @@ export const categorizationExpectedResults = {
           field: 'event.type',
           value: ['change'],
           if: "ctx.mysql_enterprise?.audit?.general_data?.sql_command == 'create_db'",
-          tag: 'categorize_event.type_change',
+          tag: 'categorize event.type change',
           allow_duplicates: false,
         },
       },
@@ -66,7 +66,7 @@ export const categorizationExpectedResults = {
           field: 'event.category',
           value: ['database'],
           if: "ctx.mysql_enterprise?.audit?.general_data?.sql_command == 'create_db'",
-          tag: 'categorize_event.category_database',
+          tag: 'categorize event.category database',
           allow_duplicates: false,
         },
       },
@@ -81,7 +81,7 @@ export const categorizationExpectedResults = {
       {
         remove: {
           field: 'event.original',
-          tag: 'remove_original_event',
+          tag: 'remove original event',
           if: 'ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))',
           ignore_failure: true,
           ignore_missing: true,
@@ -225,7 +225,7 @@ export const categorizationExpectedHandlerResponse = {
           field: 'event.type',
           value: ['creation'],
           if: "ctx.mysql_enterprise?.audit?.general_data?.sql_command == 'create_db'",
-          tag: 'categorize_event.type_creation',
+          tag: 'categorize event.type creation',
           allow_duplicates: false,
         },
       },
@@ -234,7 +234,7 @@ export const categorizationExpectedHandlerResponse = {
           field: 'event.category',
           value: ['database'],
           if: "ctx.mysql_enterprise?.audit?.general_data?.sql_command == 'create_db'",
-          tag: 'categorize_event.category_database',
+          tag: 'categorize event.category database',
           allow_duplicates: false,
         },
       },
@@ -249,7 +249,7 @@ export const categorizationExpectedHandlerResponse = {
       {
         remove: {
           field: 'event.original',
-          tag: 'remove_original_event',
+          tag: 'remove original event',
           if: 'ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))',
           ignore_failure: true,
           ignore_missing: true,

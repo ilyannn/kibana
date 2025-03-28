@@ -62,7 +62,7 @@ export const ecsMappingExpectedResults = {
       {
         set: {
           field: 'ecs.version',
-          tag: 'set_ecs_version',
+          tag: 'set ecs.version',
           value: '8.11.0',
         },
       },
@@ -70,14 +70,14 @@ export const ecsMappingExpectedResults = {
         set: {
           copy_from: 'message',
           field: 'originalMessage',
-          tag: 'copy_original_message',
+          tag: 'copy original message',
         },
       },
       {
         rename: {
           field: 'originalMessage',
           target_field: 'event.original',
-          tag: 'rename_message',
+          tag: 'rename message',
           ignore_missing: true,
           if: 'ctx.event?.original == null',
         },
@@ -87,20 +87,20 @@ export const ecsMappingExpectedResults = {
           field: 'originalMessage',
           if: 'ctx.event?.original != null',
           ignore_missing: true,
-          tag: 'remove_copied_message',
+          tag: 'remove copied message',
         },
       },
       {
         remove: {
           field: 'message',
           ignore_missing: true,
-          tag: 'remove_message',
+          tag: 'remove message',
         },
       },
       {
         json: {
           field: 'event.original',
-          tag: 'json_original',
+          tag: 'json original',
           target_field: 'mysql_enterprise.audit',
         },
       },
@@ -110,13 +110,13 @@ export const ecsMappingExpectedResults = {
           lang: 'painless',
           source:
             'if (ctx.mysql_enterprise?.audit?.timestamp != null &&\n    ctx.mysql_enterprise.audit.timestamp instanceof ArrayList){\n    ctx.mysql_enterprise.audit.timestamp = ctx.mysql_enterprise.audit.timestamp[0];\n}\n',
-          tag: 'script_convert_array_to_string',
+          tag: 'script convert array to string',
         },
       },
       {
         date: {
           field: 'mysql_enterprise.audit.timestamp',
-          tag: 'date_processor_mysql_enterprise.audit.timestamp',
+          tag: 'date processor_mysql_enterprise.audit.timestamp',
           target_field: '@timestamp',
           formats: ['yyyy-MM-dd HH:mm:ss'],
           if: 'ctx.mysql_enterprise?.audit?.timestamp != null',
@@ -162,7 +162,7 @@ export const ecsMappingExpectedResults = {
       {
         script: {
           description: 'Drops null/empty values recursively.',
-          tag: 'script_drop_null_empty_values',
+          tag: 'script drop null empty values',
           lang: 'painless',
           source:
             'boolean dropEmptyFields(Object object) {\n  if (object == null || object == "") {\n    return true;\n  } else if (object instanceof Map) {\n    ((Map) object).values().removeIf(value -> dropEmptyFields(value));\n    return (((Map) object).size() == 0);\n  } else if (object instanceof List) {\n    ((List) object).removeIf(value -> dropEmptyFields(value));\n    return (((List) object).length == 0);\n  }\n  return false;\n}\ndropEmptyFields(ctx);\n',
@@ -171,7 +171,7 @@ export const ecsMappingExpectedResults = {
       {
         geoip: {
           field: 'source.ip',
-          tag: 'geoip_source_ip',
+          tag: 'geoip source ip',
           target_field: 'source.geo',
           ignore_missing: true,
         },
@@ -181,7 +181,7 @@ export const ecsMappingExpectedResults = {
           ignore_missing: true,
           database_file: 'GeoLite2-ASN.mmdb',
           field: 'source.ip',
-          tag: 'geoip_source_asn',
+          tag: 'geoip source asn',
           target_field: 'source.as',
           properties: ['asn', 'organization_name'],
         },
@@ -189,7 +189,7 @@ export const ecsMappingExpectedResults = {
       {
         rename: {
           field: 'source.as.asn',
-          tag: 'rename_source_as_asn',
+          tag: 'rename source as asn',
           target_field: 'source.as.number',
           ignore_missing: true,
         },
@@ -197,7 +197,7 @@ export const ecsMappingExpectedResults = {
       {
         rename: {
           field: 'source.as.organization_name',
-          tag: 'rename_source_as_organization_name',
+          tag: 'rename source as organization name',
           target_field: 'source.as.organization.name',
           ignore_missing: true,
         },
@@ -205,7 +205,7 @@ export const ecsMappingExpectedResults = {
       {
         geoip: {
           field: 'destination.ip',
-          tag: 'geoip_destination_ip',
+          tag: 'geoip destination ip',
           target_field: 'destination.geo',
           ignore_missing: true,
         },
@@ -214,7 +214,7 @@ export const ecsMappingExpectedResults = {
         geoip: {
           database_file: 'GeoLite2-ASN.mmdb',
           field: 'destination.ip',
-          tag: 'geoip_destination_asn',
+          tag: 'geoip destination asn',
           target_field: 'destination.as',
           properties: ['asn', 'organization_name'],
           ignore_missing: true,
@@ -223,7 +223,7 @@ export const ecsMappingExpectedResults = {
       {
         rename: {
           field: 'destination.as.asn',
-          tag: 'rename_destination_as_asn',
+          tag: 'rename destination as asn',
           target_field: 'destination.as.number',
           ignore_missing: true,
         },
@@ -231,7 +231,7 @@ export const ecsMappingExpectedResults = {
       {
         rename: {
           field: 'destination.as.organization_name',
-          tag: 'rename_destination_as_organization_name',
+          tag: 'rename destination as organization name',
           target_field: 'destination.as.organization.name',
           ignore_missing: true,
         },
@@ -240,13 +240,13 @@ export const ecsMappingExpectedResults = {
         remove: {
           field: ['mysql_enterprise.audit.account.ip'],
           ignore_missing: true,
-          tag: 'remove_fields',
+          tag: 'remove fields',
         },
       },
       {
         remove: {
           field: 'event.original',
-          tag: 'remove_original_event',
+          tag: 'remove original event',
           if: 'ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))',
           ignore_failure: true,
           ignore_missing: true,
@@ -257,7 +257,7 @@ export const ecsMappingExpectedResults = {
       {
         append: {
           field: 'error.message',
-          tag: 'error_append_message',
+          tag: 'error append message',
           value:
             'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}',
         },
@@ -265,7 +265,7 @@ export const ecsMappingExpectedResults = {
       {
         set: {
           field: 'event.kind',
-          tag: 'error_set_kind',
+          tag: 'error set kind',
           value: 'pipeline_error',
         },
       },

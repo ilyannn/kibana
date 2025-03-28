@@ -16,20 +16,20 @@ describe('Testing pipeline templates', () => {
     const pipeline = createPipelineFromMappingState(state);
     expect(pipeline.processors).toEqual([
       {
-        set: { field: 'ecs.version', tag: 'set_ecs_version', value: '8.11.0' },
+        set: { field: 'ecs.version', tag: 'Set ecs version', value: '8.11.0' },
       },
       {
         set: {
           field: 'originalMessage',
           copy_from: 'message',
-          tag: 'copy_original_message',
+          tag: 'copy original message',
         },
       },
       {
         rename: {
           field: 'originalMessage',
           target_field: 'event.original',
-          tag: 'rename_message',
+          tag: 'rename message',
           ignore_missing: true,
           if: 'ctx.event?.original == null',
         },
@@ -38,17 +38,17 @@ describe('Testing pipeline templates', () => {
         remove: {
           field: 'originalMessage',
           ignore_missing: true,
-          tag: 'remove_copied_message',
+          tag: 'remove copied message',
           if: 'ctx.event?.original != null',
         },
       },
       {
-        remove: { field: 'message', ignore_missing: true, tag: 'remove_message' },
+        remove: { field: 'message', ignore_missing: true, tag: 'remove message' },
       },
       {
         json: {
           field: 'event.original',
-          tag: 'json_original',
+          tag: 'json original',
           target_field: 'xdfsfs.ds',
         },
       },
@@ -56,7 +56,7 @@ describe('Testing pipeline templates', () => {
         rename: {
           field: 'xdfsfs.ds.event',
           target_field: 'event.action',
-          tag: 'rename_xdfsfs.ds.event_to_event.action',
+          tag: 'rename xdfsfs.ds.event to event.action',
           ignore_missing: true,
         },
       },
@@ -65,14 +65,14 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.uid',
           target_field: 'event.id',
           ignore_missing: true,
-          tag: 'rename_xdfsfs.ds.uid_to_event.id',
+          tag: 'rename xdfsfs.ds.uid to event.id',
         },
       },
       {
         rename: {
           field: 'xdfsfs.ds.code',
           target_field: 'event.code',
-          tag: 'rename_xdfsfs.ds.code_to_event.code',
+          tag: 'rename xdfsfs.ds.code to event.code',
           ignore_missing: true,
         },
       },
@@ -81,7 +81,7 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.@timestamp',
           target_field: '@timestamp',
           formats: ["yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'", 'ISO8601'],
-          tag: 'date_processor_xdfsfs.ds.@timestamp',
+          tag: 'date processor xdfsfs.ds.@timestamp',
           if: 'ctx.xdfsfs?.ds?.get("@timestamp") != null',
         },
       },
@@ -89,7 +89,7 @@ describe('Testing pipeline templates', () => {
         rename: {
           field: 'xdfsfs.ds.cluster_name',
           target_field: 'cloud.account.name',
-          tag: 'rename_xdfsfs.ds.cluster_name_to_cloud.account.name',
+          tag: 'rename xdfsfs.ds.cluster name to cloud.account.name',
           ignore_missing: true,
         },
       },
@@ -97,7 +97,7 @@ describe('Testing pipeline templates', () => {
         rename: {
           field: 'xdfsfs.ds.identity.user',
           target_field: 'user.name',
-          tag: 'rename_xdfsfs.ds.identity.user_to_user.name',
+          tag: 'rename xdfsfs.ds.identity.user to user.name',
           ignore_missing: true,
         },
       },
@@ -105,14 +105,14 @@ describe('Testing pipeline templates', () => {
         rename: {
           field: 'xdfsfs.ds.identity.roles',
           target_field: 'user.roles',
-          tag: 'rename_xdfsfs.ds.identity.roles_to_user.roles',
+          tag: 'rename xdfsfs.ds.identity.roles to user.roles',
           ignore_missing: true,
         },
       },
       {
         script: {
           description: 'Ensures the date processor does not receive an array value.',
-          tag: 'script_convert_array_to_string_xdfsfs.ds.identity.expires',
+          tag: 'script convert array to string xdfsfs.ds.identity.expires',
           lang: 'painless',
           source:
             'if (ctx.xdfsfs?.ds?.identity?.expires != null &&\n' +
@@ -126,7 +126,7 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.identity.expires',
           target_field: 'user.changes.name',
           formats: ["yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS'Z'", 'ISO8601'],
-          tag: 'date_processor_xdfsfs.ds.identity.expires',
+          tag: 'date processor xdfsfs.ds.identity.expires',
           if: 'ctx.xdfsfs?.ds?.identity?.expires != null',
         },
       },
@@ -137,13 +137,13 @@ describe('Testing pipeline templates', () => {
           ignore_missing: true,
           ignore_failure: true,
           type: 'ip',
-          tag: 'convert_xdfsfs.ds.identity.client_ip_to_ip',
+          tag: 'convert xdfsfs.ds.identity.client ip to ip',
         },
       },
       {
         script: {
           description: 'Ensures the date processor does not receive an array value.',
-          tag: 'script_convert_array_to_string_xdfsfs.ds.identity.prev_identity_expires',
+          tag: 'script convert array to string xdfsfs.ds.identity.prev_identity_expires',
           lang: 'painless',
           source:
             'if (ctx.xdfsfs?.ds?.identity?.prev_identity_expires != null &&\n' +
@@ -157,7 +157,7 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.identity.prev_identity_expires',
           target_field: 'event.end',
           formats: ["yyyy-MM-dd'T'HH:mm:ss'Z'", 'ISO8601'],
-          tag: 'date_processor_xdfsfs.ds.identity.prev_identity_expires',
+          tag: 'date processor xdfsfs.ds.identity.prev identity_expires',
           if: 'ctx.xdfsfs?.ds?.identity?.prev_identity_expires != null',
         },
       },
@@ -166,7 +166,7 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.user',
           target_field: 'user.name',
           ignore_missing: true,
-          tag: 'rename_xdfsfs.ds.user_to_user.name',
+          tag: 'rename xdfsfs.ds.user to user.name',
         },
       },
       {
@@ -174,7 +174,7 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.login',
           target_field: 'user.id',
           ignore_missing: true,
-          tag: 'rename_xdfsfs.ds.login_to_user.id',
+          tag: 'rename xdfsfs.ds.login to user.id',
         },
       },
       {
@@ -182,7 +182,7 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.server_id',
           target_field: 'host.id',
           ignore_missing: true,
-          tag: 'rename_xdfsfs.ds.server_id_to_host.id',
+          tag: 'rename xdfsfs.ds.server id to host.id',
         },
       },
       {
@@ -190,7 +190,7 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.server_hostname',
           target_field: 'host.hostname',
           ignore_missing: true,
-          tag: 'rename_xdfsfs.ds.server_hostname_to_host.hostname',
+          tag: 'rename xdfsfs.ds.server hostname to host.hostname',
         },
       },
       {
@@ -198,7 +198,7 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.addr.remote',
           target_field: 'source.address',
           ignore_missing: true,
-          tag: 'rename_xdfsfs.ds.addr.remote_to_source.address',
+          tag: 'rename xdfsfs.ds.addr.remote to source.address',
         },
       },
       {
@@ -206,13 +206,13 @@ describe('Testing pipeline templates', () => {
           field: 'xdfsfs.ds.proto',
           target_field: 'network.protocol',
           ignore_missing: true,
-          tag: 'rename_xdfsfs.ds.proto_to_network.protocol',
+          tag: 'rename xdfsfs.ds.proto to network.protocol',
         },
       },
       {
         script: {
           description: 'Drops null/empty values recursively.',
-          tag: 'script_drop_null_empty_values',
+          tag: 'script drop null empty values',
           lang: 'painless',
           source:
             'boolean dropEmptyFields(Object object) {\n' +
@@ -233,7 +233,7 @@ describe('Testing pipeline templates', () => {
       {
         geoip: {
           field: 'source.ip',
-          tag: 'geoip_source_ip',
+          tag: 'geoip source ip',
           target_field: 'source.geo',
           ignore_missing: true,
         },
@@ -243,7 +243,7 @@ describe('Testing pipeline templates', () => {
           ignore_missing: true,
           database_file: 'GeoLite2-ASN.mmdb',
           field: 'source.ip',
-          tag: 'geoip_source_asn',
+          tag: 'geoip source asn',
           target_field: 'source.as',
           properties: ['asn', 'organization_name'],
         },
@@ -251,7 +251,7 @@ describe('Testing pipeline templates', () => {
       {
         rename: {
           field: 'source.as.asn',
-          tag: 'rename_source_as_asn',
+          tag: 'rename source as asn',
           target_field: 'source.as.number',
           ignore_missing: true,
         },
@@ -259,7 +259,7 @@ describe('Testing pipeline templates', () => {
       {
         rename: {
           field: 'source.as.organization_name',
-          tag: 'rename_source_as_organization_name',
+          tag: 'rename source as organization name',
           target_field: 'source.as.organization.name',
           ignore_missing: true,
         },
@@ -267,7 +267,7 @@ describe('Testing pipeline templates', () => {
       {
         geoip: {
           field: 'destination.ip',
-          tag: 'geoip_destination_ip',
+          tag: 'geoip destination ip',
           target_field: 'destination.geo',
           ignore_missing: true,
         },
@@ -276,7 +276,7 @@ describe('Testing pipeline templates', () => {
         geoip: {
           database_file: 'GeoLite2-ASN.mmdb',
           field: 'destination.ip',
-          tag: 'geoip_destination_asn',
+          tag: 'geoip destination asn',
           target_field: 'destination.as',
           properties: ['asn', 'organization_name'],
           ignore_missing: true,
@@ -285,7 +285,7 @@ describe('Testing pipeline templates', () => {
       {
         rename: {
           field: 'destination.as.asn',
-          tag: 'rename_destination_as_asn',
+          tag: 'rename destination as asn',
           target_field: 'destination.as.number',
           ignore_missing: true,
         },
@@ -293,7 +293,7 @@ describe('Testing pipeline templates', () => {
       {
         rename: {
           field: 'destination.as.organization_name',
-          tag: 'rename_destination_as_organization_name',
+          tag: 'rename destination as organization name',
           target_field: 'destination.as.organization.name',
           ignore_missing: true,
         },
@@ -302,13 +302,13 @@ describe('Testing pipeline templates', () => {
         remove: {
           field: ['xdfsfs.ds.identity.client_ip'],
           ignore_missing: true,
-          tag: 'remove_fields',
+          tag: 'remove fields',
         },
       },
       {
         remove: {
           field: 'event.original',
-          tag: 'remove_original_event',
+          tag: 'remove original event',
           if: 'ctx?.tags == null || !(ctx.tags.contains("preserve_original_event"))',
           ignore_failure: true,
           ignore_missing: true,
@@ -346,7 +346,7 @@ describe('Testing pipeline templates', () => {
       rename: {
         field: 'nested.field',
         target_field: 'target.field',
-        tag: 'rename_nested.field_to_target.field',
+        tag: 'rename nested.field to target.field',
         ignore_missing: true,
       },
     });
@@ -380,7 +380,7 @@ describe('Testing pipeline templates', () => {
         field: 'level1.no_target.field',
         target_field: 'target.field',
         ignore_missing: true,
-        tag: 'rename_level1.no_target.field_to_target.field',
+        tag: 'rename level1.no target.field to target.field',
       },
     });
   });
@@ -421,7 +421,7 @@ describe('Testing pipeline templates', () => {
       rename: {
         field: 'level1.level2.level3.field1',
         target_field: 'target.field1',
-        tag: 'rename_level1.level2.level3.field1_to_target.field1',
+        tag: 'rename level1.level2.level3.field1 to target.field1',
         ignore_missing: true,
       },
     });
@@ -429,7 +429,7 @@ describe('Testing pipeline templates', () => {
       rename: {
         field: 'level1.level2.field2',
         target_field: 'target.field2',
-        tag: 'rename_level1.level2.field2_to_target.field2',
+        tag: 'rename level1.level2.field2 to target.field2',
         ignore_missing: true,
       },
     });
