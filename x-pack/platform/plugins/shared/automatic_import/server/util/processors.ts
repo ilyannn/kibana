@@ -43,7 +43,7 @@ export function makeTagsUnique(processors: ESProcessorItem[]) {
 
       if (knownTags.has(options.tag)) {
         for (let postfix = 2; knownTags.has(tag); postfix++) {
-          tag = `${options.tag}-${postfix}`;
+          tag = `${options.tag} #${postfix}`;
         }
         options.tag = tag;
       }
