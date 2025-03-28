@@ -32,14 +32,14 @@ processors:
   {% if key == 'rename' %}
   - {{ key }}:
       field: {{ value.field }}
-      tag: rename-{{value.field}}-to-{{value.target_field}}
+      tag: rename_{{value.field}}_to_{{value.target_field}}
       target_field: {% if value.target_field | startswith('@') %}"{{ value.target_field }}"{% else %}{{ value.target_field }}{% endif %}
       ignore_missing: true{% endif %}
   {% if key == 'date' %}
   {% if not value.field | includes('.@') %} {# Leaving fields of type 'test.log.@timestamp' #}
   - script:
       description: Ensures the date processor does not receive an array value.
-      tag: script-convert-array-to-string-{{value.field}}
+      tag: script_convert_array_to_string_{{value.field}}
       lang: painless
       {% raw %}source: |
         if (ctx.{% endraw %}{{ value.field.replaceAll('.', '?.') }}{% raw %} != null &&
@@ -59,7 +59,7 @@ processors:
   {% if key == 'convert' %}
   - {{ key }}:
       field: {{ value.field }}
-      tag: convert-{{value.field}}-to-{{value.type}}
+      tag: convert_{{value.field}}_to_{{value.type}}
       target_field: {% if value.target_field | startswith('@') %}"{{ value.target_field }}"{% else %}{{ value.target_field }}{% endif %}
       ignore_missing: true
       ignore_failure: true

@@ -168,7 +168,7 @@ export function createCSVProcessor(source: string, targets: string[]): ESProcess
       field: source,
       target_fields: targets,
       description: 'Parse CSV input',
-      tag: 'parse-csv',
+      tag: 'parse_csv',
     },
   };
 }
@@ -180,7 +180,7 @@ export function createPassthroughFailureProcessor(): ESProcessorItem {
     append: {
       field: 'error.message',
       description: 'Append the error message as-is',
-      tag: 'append-error-message',
+      tag: 'append_error_message',
       value: '{{{_ingest.on_failure_message}}}',
     },
   };
@@ -193,7 +193,7 @@ export function createRemoveProcessor(): ESProcessorItem {
       field: 'message',
       ignore_missing: true,
       description: 'Remove the message field',
-      tag: 'remove-message-field',
+      tag: 'remove_message_field',
     },
   };
 }

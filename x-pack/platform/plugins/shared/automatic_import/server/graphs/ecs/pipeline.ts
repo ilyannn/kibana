@@ -60,7 +60,7 @@ function generateProcessor(
         target_field: ecsField.target,
         type: getConvertProcessorType(expectedEcsType),
         ignore_missing: true,
-        tag: `convert-${tagString}-to-${expectedEcsType}-${ecsField.target}`,
+        tag: `convert_${tagString}_to_${expectedEcsType}_${ecsField.target}`,
       },
     };
   }
@@ -72,7 +72,7 @@ function generateProcessor(
         target_field: ecsField.target,
         formats: convertIfIsoDate(ecsField.date_formats),
         if: fieldPathToPainlessExpression(currentPath),
-        tag: `parse-date-${tagString}-to-${ecsField.target}`,
+        tag: `parse_date_${tagString}_to_${ecsField.target}`,
       },
     };
   }
@@ -82,7 +82,7 @@ function generateProcessor(
       field: processorString,
       target_field: ecsField.target,
       ignore_missing: true,
-      tag: `rename-${tagString}-to-${ecsField.target}`,
+      tag: `rename_${tagString}_to_${ecsField.target}`,
     },
   };
 }
