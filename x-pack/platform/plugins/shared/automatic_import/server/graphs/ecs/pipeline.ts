@@ -82,7 +82,7 @@ function generateProcessor(
       field: processorString,
       target_field: ecsField.target,
       ignore_missing: true,
-      tag: `rename ${tagString} to ${ecsField.target}`,
+      tag: `Rename ${tagString} to ${ecsField.target}`,
     },
   };
 }
