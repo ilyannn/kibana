@@ -3,7 +3,7 @@
   - append:
       field: {{ processor.field }}
       value: {{ processor.value | dump }}
-      tag: categorize {{processor.field}} {{ processor.value }}
+      tag: categorize {{ processor.field }} {{ processor.value }}
       {% if processor.if %}
       if: {{ processor.if | dump }}
       {% endif %}
@@ -16,7 +16,7 @@
   - append:
       field: {{ processor.field }}
       value: {% raw %}'{{{{% endraw %}{{ processor.value_field }}{% raw %}}}}'{% endraw %}
-      tag: Add {{ processor.value field }} to related
+      tag: Add {{ processor.value_field }} to related
       {% if processor.if %}
       if: {{ processor.if | dump }}
       {% else %}
